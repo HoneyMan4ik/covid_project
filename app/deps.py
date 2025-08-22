@@ -28,11 +28,11 @@ def get_sf_session() -> Session:
 
     if host:
         cfg["host"] = host
-        # Derive account from host to satisfy connectors that require it
+
         derived = host.replace("https://", "").replace("http://", "")
         if derived.endswith(".snowflakecomputing.com"):
             derived = derived[: -len(".snowflakecomputing.com")]
-        # If cloud suffix missing, prefer explicit env account if provided
+
         if account:
             cfg["account"] = account
         else:
@@ -46,7 +46,6 @@ def get_sf_session() -> Session:
     if insecure_flag:
         cfg["insecure_mode"] = True
 
-    # Authentication strategy
     if authenticator in {"externalbrowser", "oauth"}:
         cfg["authenticator"] = authenticator
         if authenticator == "oauth":
@@ -54,7 +53,7 @@ def get_sf_session() -> Session:
             if not token:
                 raise ValueError("SNOWFLAKE_OAUTH_TOKEN is required for authenticator=oauth")
             cfg["token"] = token
-        # Do NOT require password for these modes
+
         if not cfg.get("user"):
             raise ValueError("SNOWFLAKE_USER is required")
     else:
@@ -68,10 +67,6 @@ def get_sf_session() -> Session:
 
 
 def get_sf_config_summary() -> dict:
-    """Return a sanitized view of the effective Snowflake config.
-
-    Useful for debugging env issues without exposing secrets.
-    """
     host = os.getenv("SNOWFLAKE_HOST")
     account = _normalize_account(os.getenv("SNOWFLAKE_ACCOUNT"))
     authenticator = (os.getenv("SNOWFLAKE_AUTHENTICATOR") or "").lower().strip()
